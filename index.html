@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>USG Gaming</title>
+  <style>
+    :root {
+      --bg: #070b14;
+      --panel: #10182a;
+      --card: #162238;
+      --line: #2a3d63;
+      --text: #e8f0ff;
+      --muted: #8aa0c8;
+      --accent: #3dffc8;
+      --pink: #ff4fd8;
+      --warn: #ffb020;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: Segoe UI, system-ui, sans-serif; }
+    body {
+      background:
+        radial-gradient(900px 400px at 10% -10%, #123 0%, transparent 50%),
+        radial-gradient(700px 400px at 100% 0%, #3a1650 0%, transparent 45%),
+        var(--bg);
+    }
+    header {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 18px 24px; border-bottom: 1px solid var(--line);
+      background: rgba(7,11,20,.85); position: sticky; top: 0; z-index: 5;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #4da3ff 50%, var(--pink));
+      display: grid; place-items: center; font-weight: 800; color: #061018;
+    }
+    h1 { margin: 0; font-size: 22px; letter-spacing: .08em; }
+    h1 span { color: var(--accent); }
+    .sub { margin: 0; color: var(--muted); font-size: 12px; }
+    nav { display: flex; gap: 8px; flex-wrap: wrap; }
+    nav button, .ghost {
+      background: var(--card); color: var(--text); border: 1px solid var(--line);
+      border-radius: 999px; padding: 8px 14px; cursor: pointer;
+    }
+    nav button.active, nav button:hover { border-color: var(--accent); color: var(--accent); }
+    main { max-width: 1180px; margin: 0 auto; padding: 24px; }
+    .hero {
+      background: linear-gradient(135deg, #152445, #231536);
+      border: 1px solid var(--line); border-radius: 20px; padding: 28px;
+      display: grid; gap: 10px; margin-bottom: 22px;
+    }
+    .hero h2 { margin: 0; font-size: 32px; }
+    .hero p { margin: 0; color: var(--muted); max-width: 70ch; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      padding: 16px; cursor: pointer; min-height: 170px;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .tag { font-size: 11px; color: var(--accent); letter-spacing: .12em; text-transform: uppercase; }
+    .card h3 { margin: 8px 0 6px; }
+    .card p { margin: 0; color: var(--muted); font-size: 13px; }
+    .play {
+      margin-top: 12px; align-self: start; background: var(--accent); color: #061018;
+      border: 0; border-radius: 999px; padding: 7px 12px; font-weight: 700; cursor: pointer;
+    }
+    .custom {
+      margin-top: 28px; background: var(--panel); border: 1px solid var(--line);
+      border-radius: 16px; padding: 16px;
+    }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    input {
+      flex: 1; min-width: 240px; background: #0c1322; color: var(--text);
+      border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+    }
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.72); display: none;
+      place-items: center; z-index: 20; padding: 16px;
+    }
+    .overlay.open { display: grid; }
+    .player {
+      width: min(1100px, 100%); height: min(780px, 92vh); background: #000;
+      border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+      display: grid; grid-template-rows: auto 1fr;
+    }
+    .bar {
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      padding: 10px 12px; background: #10182a;
+    }
+    iframe { width: 100%; height: 100%; border: 0; background: #000; }
+    footer { text-align: center; color: var(--muted); padding: 30px 16px 50px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">USG</div>
+      <div>
+        <h1>USG <span>GAMING</span></h1>
+        <p class="sub">Original games in your iframe — no blocked brand embeds</p>
+      </div>
+    </div>
+    <nav>
+      <button class="active" data-cat="all">All</button>
+      <button data-cat="arcade">Arcade</button>
+      <button data-cat="brain">Brain</button>
+      <button data-cat="reflex">Reflex</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h2>Play on your site.</h2>
+      <p>These games run from this page inside an iframe, so they work on GitHub Pages. Outside sites can still refuse to be framed. Use original games here, or paste a URL that allows embedding.</p>
+    </section>
+
+    <section class="grid" id="grid"></section>
+
+    <section class="custom">
+      <h3>Try a custom iframe URL</h3>
+      <p class="sub">Only works if that website allows iframes. Most big game sites do not.</p>
+      <div class="row" style="margin-top:10px">
+        <input id="customUrl" placeholder="https://example.com/game.html" />
+        <button class="play" id="customPlay">Load</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="overlay" id="overlay">
+    <div class="player">
+      <div class="bar">
+        <strong id="gameTitle">Game</strong>
+        <div>
+          <button class="ghost" id="fullBtn">Fullscreen</button>
+          <button class="ghost" id="closeBtn">Close</button>
+        </div>
+      </div>
+      <iframe id="stage" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <footer>USG Gaming · original mini-games hosted on this page</footer>
+
+  <script>
+    const shell = (title, body) => `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+      html,body{margin:0;height:100%;background:#070b14;color:#e8f0ff;font-family:sans-serif;overflow:hidden}
+      canvas{display:block;margin:0 auto;background:#0c1322}
+      .hud{position:fixed;top:10px;left:12px;right:12px;display:flex;justify-content:space-between;color:#3dffc8;font-weight:700}
+      .hint{position:fixed;bottom:12px;width:100%;text-align:center;color:#8aa0c8;font-size:13px}
+    </style></head><body>${body}</body></html>`;
+
+    const games = [
+      {
+        id: "viper", name: "Viper", cat: "arcade", blurb: "Snake. Eat orbs. Don't hit yourself.",
+        html: shell("Viper", `
+          <div class="hud"><span>VIPER</span><span id="s">0</span></div>
+          <canvas id="c" width="480" height="480"></canvas>
+          <div class="hint">Arrows / WASD</div>
+          <script>
+            const c=document.getElementById('c'),x=c.getContext('2d');
+            const T=24,g=20; let snake=[{x:10,y:10}],dir={x:1,y:0},food={x:15,y:10},score=0,dead=false;
+            onkeydown=e=>{
+              const k=e.key.toLowerCase();
+              if((k==='arrowup'||k==='w')&&dir.y!==1)dir={x:0,y:-1};
+              if((k==='arrowdown'||k==='s')&&dir.y!==-1)dir={x:0,y:1};
+              if((k==='arrowleft'||k==='a')&&dir.x!==1)dir={x:-1,y:0};
+              if((k==='arrowright'||k==='d')&&dir.x!==-1)dir={x:1,y:0};
+            };
+            function tick(){
+              if(dead) return;
+              const h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+              if(h.x<0||h.y<0||h.x>=g||h.y>=g||snake.some(p=>p.x===h.x&&p.y===h.y)){dead=true;return;}
+              snake.unshift(h);
+              if(h.x===food.x&&h.y===food.y){score++;document.getElementById('s').textContent=score;food={x:Math.floor(Math.random()*g),y:Math.floor(Math.random()*g)};}
+              else snake.pop();
+              x.fillStyle='#0c1322';x.fillRect(0,0,480,480);
+              x.fillStyle='#ff4fd8';x.fillRect(food.x*T,food.y*T,T-2,T-2);
+              snake.forEach((p,i)=>{x.fillStyle=i? '#3dffc8':'#fff';x.fillRect(p.x*T,p.y*T,T-2,T-2);});
+            }
+            setInterval(tick,110);
+          <\/script>`)
+      },
+      {
+        id: "pulse", name: "Pulse", cat: "reflex", blurb: "Click when the ring hits the beat.",
+        html: shell("Pulse", `
+          <div class="hud"><span>PULSE</span><span id="s">0</span></div>
+          <canvas id="c" width="520" height="520"></canvas>
+          <div class="hint">Click / tap on the beat</div>
+          <script>
+            const c=document.getElementById('c'),x=c.getContext('2d');
+            let r=20,score=0,ok=false;
+            function draw(){
+              r+=2.2; if(r>230){r=20;ok=false;}
+              ok = r>150 && r<175;
+              x.fillStyle='#0c1322';x.fillRect(0,0,520,520);
+              x.beginPath();x.arc(260,260,160,0,Math.PI*2);x.strokeStyle='#2a3d63';x.lineWidth=10;x.stroke();
+              x.beginPath();x.arc(260,260,r,0,Math.PI*2);x.strokeStyle=ok?'#3dffc8':'#ff4fd8';x.lineWidth=6;x.stroke();
+              requestAnimationFrame(draw);
+            }
+            function hit(){ if(ok){score++;r=20;ok=false;document.getElementById('s').textContent=score;} else score=Math.max(0,score-1),document.getElementById('s').textContent=score; }
+            c.onclick=hit; onkeydown=e=>{ if(e.code==='Space') hit(); };
+            draw();
+          <\/script>`)
+      },
+      {
+        id: "match", name: "Hack Match", cat: "brain", blurb: "Flip cards. Match the codes.",
+        html: shell("Hack Match", `
+          <div class="hud"><span>HACK MATCH</span><span id="s">0</span></div>
+          <div id="b" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:420px;margin:70px auto;padding:12px"></div>
+          <script>
+            const icons=['01','A9','FF','7C','B2','E4','3D','90'];
+            let deck=[...icons,...icons].sort(()=>Math.random()-0.5),open=[],lock=false,found=0;
+            const b=document.getElementById('b');
+            deck.forEach((v,i)=>{
+              const d=document.createElement('div');
+              d.style.cssText='height:72px;border-radius:12px;background:#162238;display:grid;place-items:center;font-weight:800;cursor:pointer;border:1px solid #2a3d63';
+              d.textContent='?'; d.onclick=()=>{
+                if(lock||d.dataset.on) return;
+                d.textContent=v; d.style.color='#3dffc8'; open.push({d,v});
+                if(open.length===2){
+                  lock=true;
+                  setTimeout(()=>{
+                    if(open[0].v===open[1].v){open.forEach(o=>o.d.dataset.on=1);found++;document.getElementById('s').textContent=found;}
+                    else open.forEach(o=>{o.d.textContent='?';o.d.style.color='#e8f0ff';});
+                    open=[]; lock=false;
+                  },450);
+                }
+              };
+              b.appendChild(d);
+            });
+          <\/script>`)
+      },
+      {
+        id: "orbit", name: "Orbit Break", cat: "arcade", blurb: "Bounce the orb. Clear bricks.",
+        html: shell("Orbit", `
+          <div class="hud"><span>ORBIT</span><span id="s">0</span></div>
+          <canvas id="c" width="520" height="520"></canvas>
+          <script>
+            const c=document.getElementById('c'),x=c.getContext('2d');
+            let px=210,bx=260,by=400,vx=3,vy=-4,score=0;
+            const bricks=[];
+            for(let r=0;r<5;r++) for(let col=0;col<8;col++) bricks.push({x:20+col*61,y:50+r*28,on:true});
+            onmousemove=e=>{const rect=c.getBoundingClientRect();px=e.clientX-rect.left-50;}
+            function loop(){
+              bx+=vx; by+=vy;
+              if(bx<8||bx>512) vx*=-1;
+              if(by<8) vy*=-1;
+              if(by>490 && bx>px && bx<px+100){ vy=-Math.abs(vy); vx+=(bx-px-50)/20; }
+              bricks.forEach(b=>{ if(b.on && bx>b.x && bx<b.x+55 && by>b.y && by<b.y+22){ b.on=false; vy*=-1; score++; document.getElementById('s').textContent=score; }});
+              x.fillStyle='#0c1322'; x.fillRect(0,0,520,520);
+              x.fillStyle='#3dffc8'; x.fillRect(px,500,100,12);
+              x.fillStyle='#fff'; x.beginPath(); x.arc(bx,by,8,0,Math.PI*2); x.fill();
+              bricks.forEach(b=>{ if(b.on){ x.fillStyle='#ff4fd8'; x.fillRect(b.x,b.y,55,22);} });
+              requestAnimationFrame(loop);
+            }
+            loop();
+          <\/script>`)
+      },
+      {
+        id: "stack", name: "Stack 2048", cat: "brain", blurb: "Merge numbers. Get 2048.",
+        html: shell("2048", `
+          <div class="hud"><span>STACK 2048</span><span id="s">0</span></div>
+          <canvas id="c" width="440" height="440"></canvas>
+          <div class="hint">Arrow keys</div>
+          <script>
+            const c=document.getElementById('c'),x=c.getContext('2d');
+            let g=Array.from({length:4},()=>[0,0,0,0]), score=0;
+            function spawn(){ const e=[]; g.forEach((r,i)=>r.forEach((v,j)=>!v&&e.push([i,j]))); if(!e.length) return; const [i,j]=e[Math.floor(Math.random()*e.length)]; g[i][j]=Math.random()<.9?2:4; }
+            function slide(row){ let a=row.filter(v=>v); for(let i=0;i<a.length-1;i++){ if(a[i]===a[i+1]){ a[i]*=2; score+=a[i]; a[i+1]=0; } } a=a.filter(v=>v); while(a.length<4) a.push(0); return a; }
+            function rot(){ const n=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]; for(let i=0;i<4;i++) for(let j=0;j<4;j++) n[j][3-i]=g[i][j]; g=n; }
+            function move(dir){ for(let i=0;i<dir;i++) rot(); g=g.map(slide); for(let i=0;i<(4-dir)%4;i++) rot(); spawn(); document.getElementById('s').textContent=score; draw(); }
+            onkeydown=e=>{ if(e.key==='ArrowLeft')move(0); if(e.key==='ArrowUp')move(1); if(e.key==='ArrowRight')move(2); if(e.key==='ArrowDown')move(3); };
+            function draw(){
+              x.fillStyle='#0c1322'; x.fillRect(0,0,440,440);
+              for(let i=0;i<4;i++) for(let j=0;j<4;j++){
+                const v=g[i][j]; x.fillStyle=v?'#1b3358':'#10182a'; x.fillRect(j*105+10,i*105+10,95,95);
+                if(v){ x.fillStyle='#3dffc8'; x.font='28px sans-serif'; x.textAlign='center'; x.fillText(v,j*105+57,i*105+68); }
+              }
+            }
+            spawn(); spawn(); draw();
+          <\/script>`)
+      },
+      {
+        id: "pong", name: "Pong CPU", cat: "arcade", blurb: "Classic paddle battle.",
+        html: shell("Pong", `
+          <div class="hud"><span>PONG</span><span id="s">0 - 0</span></div>
+          <canvas id="c" width="640" height="400"></canvas>
+          <script>
+            const c=document.getElementById('c'),x=c.getContext('2d');
+            let py=160, cy=160, bx=320, by=200, vx=4, vy=3, ps=0, cs=0;
+            onmousemove=e=>{ const r=c.getBoundingClientRect(); py=e.clientY-r.top-40; }
+            function loop(){
+              bx+=vx; by+=vy; cy += Math.sign(by-cy-40)*3;
+              if(by<0||by>400) vy*=-1;
+              if(bx<20 && by>py && by<py+80) vx=Math.abs(vx);
+              if(bx>620 && by>cy && by<cy+80) vx=-Math.abs(vx);
+              if(bx<0){ cs++; bx=320; by=200; vx=4; }
+              if(bx>640){ ps++; bx=320; by=200; vx=-4; }
+              document.getElementById('s').textContent=ps+' - '+cs;
+              x.fillStyle='#0c1322'; x.fillRect(0,0,640,400);
+              x.fillStyle='#3dffc8'; x.fillRect(8,py,10,80); x.fillRect(622,cy,10,80);
+              x.fillStyle='#fff'; x.beginPath(); x.arc(bx,by,7,0,Math.PI*2); x.fill();
+              requestAnimationFrame(loop);
+            }
+            loop();
+          <\/script>`)
+      },
+      {
+        id: "flap", name: "Flap", cat: "reflex", blurb: "Tap to fly through gaps.",
+        html: shell("Flap", `
+          <div class="hud"><span>FLAP</span><span id="s">0</span></div>
+          <canvas id="c" width="400" height="560"></canvas>
+          <div class="hint">Click / space</div>
+          <script>
+            const c=document.getElementById('c'),x=c.getContext('2d');
+            let y=250, v=0, pipes=[{x:400,g:180}], score=0, live=true;
+            function flap(){ if(live) v=-7; }
+            c.onclick=flap; onkeydown=e=>{ if(e.code==='Space') flap(); };
+            function loop(){
+              if(!live) return;
+              v+=0.35; y+=v;
+              pipes.forEach(p=>p.x-=2.4);
+              if(pipes[pipes.length-1].x<220) pipes.push({x:400,g:80+Math.random()*220});
+              pipes=pipes.filter(p=>p.x>-60);
+              pipes.forEach(p=>{
+                if(p.x===196) {score++; document.getElementById('s').textContent=score;}
+                if(20< p.x+50 && 50>p.x && (y<p.g || y>p.g+140)) live=false;
+              });
+              if(y<0||y>560) live=false;
+              x.fillStyle='#0c1322'; x.fillRect(0,0,400,560);
+              x.fillStyle='#ff4fd8'; pipes.forEach(p=>{ x.fillRect(p.x,0,50,p.g); x.fillRect(p.x,p.g+140,50,560); });
+              x.fillStyle='#3dffc8'; x.fillRect(20,y,30,30);
+              requestAnimationFrame(loop);
+            }
+            loop();
+          <\/script>`)
+      },
+      {
+        id: "aim", name: "Target Rush", cat: "reflex", blurb: "Click targets before they vanish.",
+        html: shell("Aim", `
+          <div class="hud"><span>TARGET RUSH</span><span id="s">0</span></div>
+          <canvas id="c" width="520" height="520"></canvas>
+          <script>
+            const c=document.getElementById('c'),x=c.getContext('2d');
+            let t={x:200,y:200,r:28}, score=0;
+            function place(){ t={x:40+Math.random()*440,y:40+Math.random()*440,r:28}; }
+            c.onclick=e=>{
+              const r=c.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+              const d=Math.hypot(mx-t.x,my-t.y);
+              if(d<t.r){ score++; document.getElementById('s').textContent=score; place(); }
+            };
+            function loop(){
+              x.fillStyle='#0c1322'; x.fillRect(0,0,520,520);
+              x.beginPath(); x.arc(t.x,t.y,t.r,0,Math.PI*2); x.fillStyle='#ff4fd8'; x.fill();
+              x.beginPath(); x.arc(t.x,t.y,t.r/2,0,Math.PI*2); x.fillStyle='#fff'; x.fill();
+              requestAnimationFrame(loop);
+            }
+            loop();
+          <\/script>`)
+      }
+    ];
+
+    const grid = document.getElementById('grid');
+    const overlay = document.getElementById('overlay');
+    const stage = document.getElementById('stage');
+    const gameTitle = document.getElementById('gameTitle');
+
+    function render(cat='all') {
+      grid.innerHTML = '';
+      games.filter(g => cat==='all' || g.cat===cat).forEach(g => {
+        const el = document.createElement('article');
+        el.className = 'card';
+        el.innerHTML = `<div><div class="tag">${g.cat}</div><h3>${g.name}</h3><p>${g.blurb}</p></div><button class="play">Play</button>`;
+        el.onclick = () => openGame(g.name, g.html, true);
+        grid.appendChild(el);
+      });
+    }
+
+    function openGame(name, src, isHtml) {
+      gameTitle.textContent = name;
+      if (isHtml) { stage.removeAttribute('src'); stage.srcdoc = src; }
+      else { stage.srcdoc = ''; stage.src = src; }
+      overlay.classList.add('open');
+    }
+
+    document.querySelectorAll('nav button').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render(btn.dataset.cat);
+      };
+    });
+
+    document.getElementById('closeBtn').onclick = () => {
+      overlay.classList.remove('open');
+      stage.srcdoc = '';
+      stage.src = 'about:blank';
+    };
+    document.getElementById('fullBtn').onclick = () => {
+      const p = document.querySelector('.player');
+      if (p.requestFullscreen) p.requestFullscreen();
+    };
+    document.getElementById('customPlay').onclick = () => {
+      const url = document.getElementById('customUrl').value.trim();
+      if (!url) return;
+      openGame('Custom', url, false);
+    };
+
+    render();
+  </script>
+</body>
+</html>
